@@ -1,8 +1,8 @@
 /*
-  html2canvas 0.4.1 <http://html2canvas.hertzen.com>
-  Copyright (c) 2013 Niklas von Hertzen
+  <%= pkg.title || pkg.name %> <%= pkg.version %><%= pkg.homepage ? " <" + pkg.homepage + ">" : "" %>
+  Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>
 
-  Released under MIT License
+  Released under <%= _.pluck(pkg.licenses, "type").join(", ") %> License
 */
 
 (function(window, document, undefined){
@@ -172,6 +172,22 @@ _html2canvas.Util.Bounds = function (element) {
   }
 
   return bounds;
+};
+
+/**
+ * Just like jQuery.offset() method
+ *
+ * @param {HTMLElement} element
+ * @return {{top: number, left: number}}
+ * @see https://github.com/oneuijs/You-Dont-Need-jQuery#2.3
+ * @constructor
+ */
+_html2canvas.Util.Offset = function (element) {
+    var box = element.getBoundingClientRect();
+    return {
+        top: box.top + window.pageYOffset - document.documentElement.clientTop,
+        left: box.left + window.pageXOffset - document.documentElement.clientLeft
+    };
 };
 
 // TODO ideally, we'd want everything to go through this function instead of Util.Bounds,
@@ -1032,7 +1048,9 @@ function h2cRenderContext(width, height) {
   };
 }
 _html2canvas.Parse = function (images, options, cb) {
-  window.scroll(0,0);
+  var top = window.pageYOffset || document.documentElement.scrollTop;
+  var left = window.pageXOffset || document.documentElement.scrollLeft;
+  window.scrollTo(0,0);
 
   var element = (( options.elements === undefined ) ? document.body : options.elements[0]), // select body by default
   numDraws = 0,
@@ -1069,6 +1087,9 @@ _html2canvas.Parse = function (images, options, cb) {
       }
 
       removePseudoElements();
+      Util.log('Parse patch, scrollback to : ',left,top);
+
+	  window.scrollTo(left, top);
 
       Util.log('Done parsing, moving to Render.');
 
@@ -1714,9 +1735,19 @@ _html2canvas.Parse = function (images, options, cb) {
     brh = borderRadius[2][0],
     brv = borderRadius[2][1],
     blh = borderRadius[3][0],
-    blv = borderRadius[3][1],
+    blv = borderRadius[3][1];
 
-    topWidth = width - trh,
+    var halfHeight = Math.floor(height / 2);
+    tlh = tlh > halfHeight ? halfHeight : tlh;
+    tlv = tlv > halfHeight ? halfHeight : tlv;
+    trh = trh > halfHeight ? halfHeight : trh;
+    trv = trv > halfHeight ? halfHeight : trv;
+    brh = brh > halfHeight ? halfHeight : brh;
+    brv = brv > halfHeight ? halfHeight : brv;
+    blh = blh > halfHeight ? halfHeight : blh;
+    blv = blv > halfHeight ? halfHeight : blv;
+
+    var topWidth = width - trh,
     rightHeight = height - brv,
     bottomWidth = width - brh,
     leftHeight = height - blv;
@@ -2945,6 +2976,7 @@ _html2canvas.Renderer.Canvas = function(options) {
   return function(parsedData, options, document, queue, _html2canvas) {
     var ctx = canvas.getContext("2d"),
     newCanvas,
+	offset,
     bounds,
     fstyle,
     zStack = parsedData.stack;
@@ -2982,7 +3014,6 @@ _html2canvas.Renderer.Canvas = function(options) {
       ctx.restore();
     });
 
-    Util.log("html2canvas: Renderer: Canvas renderer done - returning canvas obj");
 
     if (options.elements.length === 1) {
       if (typeof options.elements[0] === "object" && options.elements[0].nodeName !== "BODY") {
@@ -2993,8 +3024,18 @@ _html2canvas.Renderer.Canvas = function(options) {
         newCanvas.height = Math.ceil(bounds.height);
         ctx = newCanvas.getContext("2d");
 
-        ctx.drawImage(canvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
-        canvas = null;
+		offset = _html2canvas.Util.Offset(options.elements[0]);
+        if (newCanvas.width !== 0 && newCanvas.height !== 0) {
+            Util.log('Draw Image Info : ',offset.left,offset.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+            ctx = newCanvas.getContext("2d");
+            ctx.drawImage(canvas, offset.left,offset.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+            canvas = null;
+			Util.log("html2canvas: Renderer: Canvas renderer done - returning canvas obj");
+        }else{
+            //TODO : else return ?
+            Util.log("html2canvas: Renderer: Canvas renderer error, newCanvas has illegal w & h - returning parsed canvas obj");
+			return canvas;
+        }
         return newCanvas;
       }
     }
@@ -3002,4 +3043,5 @@ _html2canvas.Renderer.Canvas = function(options) {
     return canvas;
   };
 };
+
 })(window,document);

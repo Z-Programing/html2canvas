@@ -165,6 +165,22 @@ _html2canvas.Util.Bounds = function (element) {
   return bounds;
 };
 
+/**
+ * Just like jQuery.offset() method
+ *
+ * @param {HTMLElement} element
+ * @return {{top: number, left: number}}
+ * @see https://github.com/oneuijs/You-Dont-Need-jQuery#2.3
+ * @constructor
+ */
+_html2canvas.Util.Offset = function (element) {
+    var box = element.getBoundingClientRect();
+    return {
+        top: box.top + window.pageYOffset - document.documentElement.clientTop,
+        left: box.left + window.pageXOffset - document.documentElement.clientLeft
+    };
+};
+
 // TODO ideally, we'd want everything to go through this function instead of Util.Bounds,
 // but would require further work to calculate the correct positions for elements with offsetParents
 _html2canvas.Util.OffsetBounds = function (element) {

@@ -1,5 +1,7 @@
 _html2canvas.Parse = function (images, options, cb) {
-  window.scroll(0,0);
+  var top = window.pageYOffset || document.documentElement.scrollTop;
+  var left = window.pageXOffset || document.documentElement.scrollLeft;
+  window.scrollTo(0,0);
 
   var element = (( options.elements === undefined ) ? document.body : options.elements[0]), // select body by default
   numDraws = 0,
@@ -36,6 +38,9 @@ _html2canvas.Parse = function (images, options, cb) {
       }
 
       removePseudoElements();
+      Util.log('Parse patch, scrollback to : ',left,top);
+
+	  window.scrollTo(left, top);
 
       Util.log('Done parsing, moving to Render.');
 

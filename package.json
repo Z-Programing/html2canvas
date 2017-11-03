@@ -1,20 +1,27 @@
 {
   "title": "html2canvas",
   "name": "html2canvas",
-  "description": "Screenshots with JavaScript",
-  "version": "0.4.1",
+  "description": "A Forked version of Screenshots with JavaScript. Added some modified to restore scroll after Parsed , capture non-visible part on screen",
+  "version": "0.4.3",
   "author": {
     "name": "Niklas von Hertzen",
     "email": "niklasvh@gmail.com",
     "url": "http://hertzen.com"
   },
+  "contributors": [
+    {
+      "name": "Zuko",
+      "email": "zuko.pro.vn@gmail.com",
+      "url": "http://zuko.pw"
+    }
+  ],
   "engines": {
     "node": ">=0.8.0"
   },
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "git@github.com:niklasvh/html2canvas.git"
+    "url": "git@github.com:Z-Programing/html2canvas.git"
   },
   "bugs": {
     "url": "https://github.com/niklasvh/html2canvas/issues"

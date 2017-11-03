@@ -67,6 +67,7 @@ _html2canvas.Renderer.Canvas = function(options) {
   return function(parsedData, options, document, queue, _html2canvas) {
     var ctx = canvas.getContext("2d"),
     newCanvas,
+	offset,
     bounds,
     fstyle,
     zStack = parsedData.stack;
@@ -104,7 +105,6 @@ _html2canvas.Renderer.Canvas = function(options) {
       ctx.restore();
     });
 
-    Util.log("html2canvas: Renderer: Canvas renderer done - returning canvas obj");
 
     if (options.elements.length === 1) {
       if (typeof options.elements[0] === "object" && options.elements[0].nodeName !== "BODY") {
@@ -115,10 +115,18 @@ _html2canvas.Renderer.Canvas = function(options) {
         newCanvas.height = Math.ceil(bounds.height);
         ctx = newCanvas.getContext("2d");
 
-		var imgData = canvas.getContext("2d").getImageData(bounds.left, bounds.top, bounds.width, bounds.height);
-		ctx.putImageData(imgData, 0, 0);
-
-        canvas = null;
+		offset = _html2canvas.Util.Offset(options.elements[0]);
+        if (newCanvas.width !== 0 && newCanvas.height !== 0) {
+            Util.log('Draw Image Info : ',offset.left,offset.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+            ctx = newCanvas.getContext("2d");
+            ctx.drawImage(canvas, offset.left,offset.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height);
+            canvas = null;
+			Util.log("html2canvas: Renderer: Canvas renderer done - returning canvas obj");
+        }else{
+            //TODO : else return ?
+            Util.log("html2canvas: Renderer: Canvas renderer error, newCanvas has illegal w & h - returning parsed canvas obj");
+			return canvas;
+        }
         return newCanvas;
       }
     }
