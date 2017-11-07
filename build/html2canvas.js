@@ -1114,22 +1114,24 @@ _html2canvas.Parse = function (images, options, cb) {
     function getPseudoElementClasses(){
       var findPsuedoEls = /:before|:after/;
       var sheets = document.styleSheets;
+      // Don't push empty or all-space string item
+      var regEx = /^(\s)*$/;
       for (var i = 0, j = sheets.length; i < j; i++) {
         try {
           var rules = sheets[i].cssRules;
           for (var k = 0, l = rules.length; k < l; k++) {
             if(findPsuedoEls.test(rules[k].selectorText)) {
-              classes.push(rules[k].selectorText);
+                // Trim off the :after and :before (or ::after and ::before)
+                // We don't need two loop for this
+                var removed = rules[k].selectorText.match(/(^[^:]*)/)[1];
+                if(!regEx.test(removed)){
+                    classes.push(removed);
+                }
             }
           }
         }
         catch(e) { // will throw security exception for style sheets loaded from external domains
         }
-      }
-
-      // Trim off the :after and :before (or ::after and ::before)
-      for (i = 0, j = classes.length; i < j; i++) {
-        classes[i] = classes[i].match(/(^[^:]*)/)[1];
       }
     }
 
@@ -1210,15 +1212,6 @@ _html2canvas.Parse = function (images, options, cb) {
     } else {
       el.className = el.className.replace(className, "").trim();
     }
-  }
-
-  function hasClass (el, className) {
-    return el.className.indexOf(className) > -1;
-  }
-
-  // Note that this doesn't work in < IE8, but we don't support that anyhow
-  function nodeListToArray (nodeList) {
-    return Array.prototype.slice.call(nodeList);
   }
 
   function documentWidth () {
